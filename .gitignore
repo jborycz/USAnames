@@ -4,3 +4,8 @@ data/namesByState/.DS_Store
 data/nationalNames/.DS_Store
 data/.DS_Store
 .DS_Store
+.Rproj.user
+.RData
+.Rhistory
+data/namesByState/stateNames.csv
+data/nationalNames/nationalNames.csv

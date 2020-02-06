@@ -1,0 +1,99 @@
+---
+title: "USA Names"
+output: html_notebook
+---
+R is an incredibly powerful data analysis tool in part because of the incredibly diverse array of plotting packages available for this language.
+
+## Libraries
+**Pacman** is an extremely useful package that allows you to run **install.packages** and **library** at the same time, for multiple packages. So, the first thing that we will do is install and load **pacman**.
+```{r}
+install.packages("pacman")
+library(pacman)
+```
+
+We can then used pacman to load the other packages we need for this project. These packages include,
+  * **tidyverse**: this package contains many data editing and plotting tools, including ggplot2
+  * **RColorBrewer**: allows you to select from a number of color palettes for plotting within ggplot2
+  * **geofacet**: create plots based on a geographical location (will make more sense after some examples)
+  * **choroplethrMaps** & **choroplethr**: create geographical maps from data
+```{r}
+pacman::p_load(tidyverse,RColorBrewer,geofacet,choroplethrMaps,choroplethr)
+```
+
+## Upload data to R
+You can upload data to R by using **read.csv**. I like to keep a pristine version of the original data, so I save it under a different name for editing.
+```{r}
+national_name_data_original <- read.csv("data/nationalNames/nationalNames.csv")
+national_name_data <- national_name_data_original 
+```
+
+Let's take a look at these data with the **head** function.
+```{r}
+head(national_name_data)
+```
+
+## Cleaning data
+By using pipes (**%>%**) from the **tidyverse** package we can add useful columns to the dataset. Here we will use, 
+
+  * **group_by** to organize the data,  
+  * **mutate** and **row_number** to create a new column called **rank** that ranks the most popular names in each year for males and females,  
+  * **substr** to create a column that contains the first letter of each name,  
+  * **str_length** to create a column containing the number of letters in each name, and  
+  * **filter** to select the top names for each year.  
+```{r}
+national_name_data <- national_name_data %>% group_by(sex, year) %>%
+  mutate(rank = row_number(), firstLetter = substr(name, 1, 1), length = str_length(name)) %>% filter(rank <= 50) 
+```
+
+Let's take a look at these data AGAIN with the **head()** function.
+```{r}
+head(national_name_data)
+```
+
+## Basic R plot
+R plot has some useful features but is cumbersome for complex plots. 
+```{r}
+plot(national_name_data$year, national_name_data$number)
+```
+
+## ggplot2
+**ggplot2** is a suite of functions that makes is easier to create complex plots with datasets in R. 
+
+### Basic set-up for ggplot2
+ggplot2 allows you to add or edit features in a plot by using the **+** sign. The fundamental function is **ggplot2**, which is where you will specify which data you are going to use and the **aesthetics** of the plot that you will create with the **aes()** function. Within **aes()** you can specify which data will be on the x and y axes and which colors you want the plot to contain.
+
+Here we will line plot of the entire **national_name_data** dataset
+```{r}
+ggplot(data=national_name_data,aes(x=year, y=number)) +
+  geom_line()
+```
+
+As you can see this plot is basically nonsense. It generally requires quite a few specifications for **ggplot2** to create meaningful plots. Let's try adding some color.
+```{r}
+ggplot(data=national_name_data,aes(x=year, y=number, color=name)) +
+  geom_line()
+```
+
+### Using subset within ggplot2
+WOAH! It looks like have way, way, way too many names in the plot legend. We could remove the legend, but that would make the data uninterpretable. So, let's narrow our focus down to a smaller subset of names. We can do so with the **subset** function within ggplot2. Using **subset** is a great way to leave your data pristine while still creating useful plots. Here we will limit the plot to names that were in the top 3 in at least 1 year from 1918 to 2018.
+```{r}
+ggplot(subset(national_name_data, rank <= 3), aes(x=year, y=number, color=name)) +
+  geom_line()
+```
+
+We can limit data by any of the variables within the dataset. We can select specific names, years, name lenghts, names beginning with specific letters, or if the names belong to males or females. Here I will limit to names that were in the top 10 for at least one year, that belong to males, and that begin with the letter J.
+```{r}
+ggplot(subset(national_name_data, rank <= 10 & sex == "M" & firstLetter == "J"), aes(x=year, y=number, color=name)) +
+  geom_line()
+```
+
+
+
+### Important commands and resources
+
+  * **Cmd+Option+I** adds a new code chunk
+  * **Cmd+Shift+K** shows a preview of the html version of this notebook.
+  * **https://rmarkdown.rstudio.com/** shows you how to create R markdown documents.
+  
+
+
